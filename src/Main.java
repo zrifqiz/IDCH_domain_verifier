@@ -1,117 +1,98 @@
-import java.io.*;
-import java.net.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 /**
  * Created by zcabez on 7/10/17.
  */
 public class Main {
-    static BufferedReader webFileReader;
-    static String line;
-    static URL url;
-    static HttpURLConnection connection;
-    static PrintWriter printWriterFail;
-    static PrintWriter printWriterSuccess;
-    static String websiteDomain;
-    static String reseller;
+    private static int end = 0;
+    private static int start = 0;
 
-    static int startingPoint = 1;
-    static String endPoint = "selesai";
-    static int skipper = 1;
-
+    private static int mode;
+    private static ArrayList<Integer> choices = new ArrayList<Integer>();
     public static void main(String[] args) {
 
+        choices.add(2);
+        choices.add(1);
 
-        try {
-            webFileReader = new BufferedReader(new FileReader("webFile.txt"));
-            printWriterFail = new PrintWriter("unresolvedDNS." + startingPoint +
-                    "-" + endPoint + ".txt", "UTF-8");
+        Scanner scanner = new Scanner(System.in);
 
-            printWriterSuccess = new PrintWriter("success." + startingPoint +
-                    "-" + endPoint + ".txt", "UTF-8");
-            line = webFileReader.readLine();
-            line = webFileReader.readLine();
-        } catch (UnknownHostException e) {
-            System.out.print("Un resolved host");
-        } catch (FileNotFoundException e) {
-            System.out.println("error reading file");
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        System.out.println("Choose scan mode: ");
+        System.out.println("1. Full Scan");
+        System.out.println("2. Partial Scan");
+        System.out.println("");
 
-        while (skipper < startingPoint){
-            try {
-                line = webFileReader.readLine();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            skipper++;
-        }
+        System.out.print("Choose mode : ");
 
+        int userChoice = 0;
 
-        while (line != null) {
-
-            try {
-                String[] array = line.split(",");
-                websiteDomain = array[0];
-                reseller = array[10];
-                System.out.print(websiteDomain + " ");
-
-                url = new URL("http://" + array[0]);
-                connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestMethod("GET");
-                connection.setReadTimeout(10000);
-                connection.setConnectTimeout(10000);
-
-                connection.connect();
-                System.out.println(connection.getResponseCode() + "");
-
-                printWriterSuccess.append(websiteDomain + " | " + reseller + " | " + connection.getResponseCode() +
-                        "\n");
-
-            } catch (UnknownHostException e) {
-                System.out.println("Un resolved host");
-                printWriterFail.append(websiteDomain + " | " + reseller + " | " + "Un resolved host\n");
-            } catch (FileNotFoundException e) {
-                System.out.println("error reading file");
-            } catch (IOException e) {
-                e.printStackTrace();
+        while (!choices.contains(userChoice)) {
+            while (!scanner.hasNextInt()) {
+                System.out.println("Please choose mode !!");
+                System.out.print("Choose mode : ");
+                scanner.next();
             }
 
-            try {
-                line = webFileReader.readLine();
-            } catch (IOException e) {
-                e.printStackTrace();
+            userChoice = scanner.nextInt();
+            if (!choices.contains(userChoice)){
+                System.out.println("Please choose available mode");
+                System.out.print("Choose mode : ");
             }
-
-            startingPoint++;
         }
 
-        if (printWriterFail != null) {
-            printWriterFail.close();
+        System.out.println("");
+        if (userChoice == 2) {
+            while (end - start <= 0) {
+                System.out.print("start index : ");
+                while (!scanner.hasNextInt()) {
+                    System.out.println("Input starting index !!");
+                    System.out.print("start index : ");
+                    scanner.next();
+                }
+                start = scanner.nextInt();
+
+                System.out.print("end index : ");
+                while (!scanner.hasNextInt()) {
+                    System.out.println("Input end index !!");
+                    System.out.print("end index : ");
+                    scanner.next();
+                }
+                end = scanner.nextInt();
+
+                if (end - start <= 0) {
+                    System.out.println("Unreasonable range. Try again");
+                    System.out.println("");
+                }
+            }
         }
-        if (printWriterSuccess != null) {
-            printWriterSuccess.close();
+
+        System.out.println("");
+        switch (userChoice) {
+            case 1:
+                System.out.println("Starting full scan......");
+                FullScan fullScan = new FullScan();
+                try {
+                    fullScan.initScan();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
+            case 2:
+                System.out.println("Starting scan from index " + start + " to " + end + ".....");
+                PartialScan partialScan = new PartialScan(start, end);
+                try {
+                    partialScan.initScan();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
         }
 
 
-//        try {
-//            URL url = new URL("http://sndksjdfasdbfasdf.com/");
-//            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-//            connection.setRequestMethod("GET");
-//
-//            connection.connect();
-//            System.out.print(connection.getResponseCode() + "");
-//        } catch (MalformedURLException e) {
-//            e.printStackTrace();
-//        } catch (UnknownHostException e) {
-//            System.out.print("Un resolved host");
-//            e.printStackTrace();
-//        } catch (ProtocolException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+
+
+
     }
 
 }
